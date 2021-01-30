@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import "./App.css";
 import Canvas from "./Canvas";
 
@@ -28,7 +28,7 @@ type TravelPower = {
   t: number;
 };
 
-type Statistics = {};
+// type Statistics = {};
 
 function getFactionColor(faction: Faction): string {
   switch (faction) {
@@ -97,7 +97,7 @@ function App() {
   const travelingPower = useRef<TravelPower[]>([]);
   const selectedNode = useRef<number | null>(null);
 
-  const [stats, setStats] = useState<Statistics>({});
+  // const [stats, setStats] = useState<Statistics>({});
 
   const findClickedNode = (mouseX: number, mouseY: number): number | null => {
     const sHalf = NODE_SIZE / 2;
@@ -140,8 +140,9 @@ function App() {
 
   const update = (frameCount: number) => {
     if (frameCount % 60 === 0) {
-      let newStats = {};
-      setStats(newStats);
+      // TODO create statistics
+      // let newStats = {};
+      // setStats(newStats);
     }
 
     if (frameCount % 50 === 0) {
