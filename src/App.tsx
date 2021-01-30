@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { updateSourceFile } from "typescript";
 import "./App.css";
 import Canvas from "./Canvas";
 
