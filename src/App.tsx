@@ -1,11 +1,11 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "./App.css";
 import Canvas from "./Canvas";
 
 const NODE_SIZE = 20;
 const POWER_SPEED = 0.0075;
 
-type Faction = null | "red" | "player";
+type Faction = "none" | "red" | "player";
 
 type Node = {
   x: number;
@@ -28,7 +28,11 @@ type TravelPower = {
   t: number;
 };
 
-// type Statistics = {};
+type FactionStatistics = {
+  totalPower: number;
+  controlledNodes: number;
+};
+type Statistics = { [key in Faction]: FactionStatistics };
 
 function getFactionColor(faction: Faction): string {
   switch (faction) {
@@ -51,11 +55,35 @@ function generateLevel(): [Node[], Connection[]] {
       power: 3,
       connections: [1, 3],
     },
-    { x: 250, y: 50, faction: null, power: 3, connections: [0, 2, 3] },
-    { x: 400, y: 100, faction: null, power: 3, connections: [1, 3] },
-    { x: 250, y: 150, faction: null, power: 3, connections: [0, 1, 2, 4, 6] },
+    {
+      x: 250,
+      y: 50,
+      faction: "none" as Faction,
+      power: 3,
+      connections: [0, 2, 3],
+    },
+    {
+      x: 400,
+      y: 100,
+      faction: "none" as Faction,
+      power: 3,
+      connections: [1, 3],
+    },
+    {
+      x: 250,
+      y: 150,
+      faction: "none" as Faction,
+      power: 3,
+      connections: [0, 1, 2, 4, 6],
+    },
 
-    { x: 100, y: 250, faction: null, power: 3, connections: [3, 5] },
+    {
+      x: 100,
+      y: 250,
+      faction: "none" as Faction,
+      power: 3,
+      connections: [3, 5],
+    },
     {
       x: 250,
       y: 300,
@@ -63,7 +91,13 @@ function generateLevel(): [Node[], Connection[]] {
       power: 3,
       connections: [4, 6],
     },
-    { x: 400, y: 250, faction: null, power: 3, connections: [3, 5] },
+    {
+      x: 400,
+      y: 250,
+      faction: "none" as Faction,
+      power: 3,
+      connections: [3, 5],
+    },
   ];
 
   const connections = [];
@@ -97,7 +131,11 @@ function App() {
   const travelingPower = useRef<TravelPower[]>([]);
   const selectedNode = useRef<number | null>(null);
 
-  // const [stats, setStats] = useState<Statistics>({});
+  const [stats, setStats] = useState<Statistics>({
+    none: { totalPower: 3, controlledNodes: 1 },
+    player: { totalPower: 3, controlledNodes: 1 },
+    red: { totalPower: 3, controlledNodes: 1 },
+  });
 
   const findClickedNode = (mouseX: number, mouseY: number): number | null => {
     const sHalf = NODE_SIZE / 2;
@@ -251,6 +289,12 @@ function App() {
         }}
         draw={draw}
       />
+      <div>
+        {Object.keys(stats).map((k: any) => {
+          const s = stats[k as Faction];
+          return <div>{s.totalPower}</div>;
+        })}
+      </div>
     </div>
   );
 }
