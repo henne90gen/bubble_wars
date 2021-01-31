@@ -5,7 +5,9 @@ import Canvas from "./Canvas";
 const NODE_SIZE = 20;
 const POWER_SPEED = 0.0075;
 
-type Faction = "none" | "red" | "player";
+const FACTIONS = ["none", "red", "player"] as const;
+type FactionTuple = typeof FACTIONS;
+type Faction = FactionTuple[number];
 
 type Node = {
   x: number;
@@ -165,6 +167,17 @@ function App() {
       return;
     }
 
+    let foundOtherNode = false;
+    for (const con of previousNode.connections) {
+      if (selectedNode.current === con) {
+        foundOtherNode = true;
+        break;
+      }
+    }
+    if (!foundOtherNode) {
+      return;
+    }
+
     travelingPower.current.push({
       startNode: previousSelectedNode,
       endNode: selectedNode.current,
@@ -178,14 +191,24 @@ function App() {
 
   const update = (frameCount: number) => {
     if (frameCount % 60 === 0) {
-      // TODO create statistics
-      // let newStats = {};
-      // setStats(newStats);
+      const newStats: Statistics = {
+        none: { totalPower: 0, controlledNodes: 0 },
+        red: { totalPower: 0, controlledNodes: 0 },
+        player: { totalPower: 0, controlledNodes: 0 },
+      };
+      for (const node of nodesRef.current) {
+        newStats[node.faction].controlledNodes++;
+        newStats[node.faction].totalPower += node.power;
+      }
+      for (const travel of travelingPower.current) {
+        newStats[travel.faction].totalPower += travel.power;
+      }
+      setStats(newStats);
     }
 
     if (frameCount % 50 === 0) {
       for (let i = 0; i < nodesRef.current.length; i++) {
-        if (nodesRef.current[i].faction === null) {
+        if (nodesRef.current[i].faction === "none") {
           continue;
         }
         nodesRef.current[i].power++;
@@ -289,10 +312,19 @@ function App() {
         }}
         draw={draw}
       />
-      <div>
-        {Object.keys(stats).map((k: any) => {
-          const s = stats[k as Faction];
-          return <div>{s.totalPower}</div>;
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+        <div>Faction</div>
+        <div>Total Power</div>
+        <div>Controlled Nodes</div>
+        {FACTIONS.map((f: Faction) => {
+          const s = stats[f];
+          return (
+            <>
+              <div>{f}</div>
+              <div>{s.totalPower}</div>
+              <div>{s.controlledNodes}</div>
+            </>
+          );
         })}
       </div>
     </div>
