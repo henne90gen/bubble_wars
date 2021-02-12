@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/bubble_wars/static/css/main.8c8b27cf.chunk.css",
-    "main.js": "/bubble_wars/static/js/main.1b2327f9.chunk.js",
-    "main.js.map": "/bubble_wars/static/js/main.1b2327f9.chunk.js.map",
+    "main.js": "/bubble_wars/static/js/main.8b4c9604.chunk.js",
+    "main.js.map": "/bubble_wars/static/js/main.8b4c9604.chunk.js.map",
     "runtime-main.js": "/bubble_wars/static/js/runtime-main.354517b5.js",
     "runtime-main.js.map": "/bubble_wars/static/js/runtime-main.354517b5.js.map",
-    "static/js/2.2db1c1e7.chunk.js": "/bubble_wars/static/js/2.2db1c1e7.chunk.js",
-    "static/js/2.2db1c1e7.chunk.js.map": "/bubble_wars/static/js/2.2db1c1e7.chunk.js.map",
+    "static/js/2.5b3b2dbd.chunk.js": "/bubble_wars/static/js/2.5b3b2dbd.chunk.js",
+    "static/js/2.5b3b2dbd.chunk.js.map": "/bubble_wars/static/js/2.5b3b2dbd.chunk.js.map",
     "static/js/3.70f30f4e.chunk.js": "/bubble_wars/static/js/3.70f30f4e.chunk.js",
     "static/js/3.70f30f4e.chunk.js.map": "/bubble_wars/static/js/3.70f30f4e.chunk.js.map",
     "index.html": "/bubble_wars/index.html",
     "static/css/main.8c8b27cf.chunk.css.map": "/bubble_wars/static/css/main.8c8b27cf.chunk.css.map",
-    "static/js/2.2db1c1e7.chunk.js.LICENSE.txt": "/bubble_wars/static/js/2.2db1c1e7.chunk.js.LICENSE.txt"
+    "static/js/2.5b3b2dbd.chunk.js.LICENSE.txt": "/bubble_wars/static/js/2.5b3b2dbd.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.354517b5.js",
-    "static/js/2.2db1c1e7.chunk.js",
+    "static/js/2.5b3b2dbd.chunk.js",
     "static/css/main.8c8b27cf.chunk.css",
-    "static/js/main.1b2327f9.chunk.js"
+    "static/js/main.8b4c9604.chunk.js"
   ]
 }
