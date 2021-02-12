@@ -133,6 +133,7 @@ function App() {
   const travelingPower = useRef<TravelPower[]>([]);
   const selectedNode = useRef<number | null>(null);
 
+  const [isPaused, setIsPaused] = useState<boolean>(false);
   const [stats, setStats] = useState<Statistics>({
     none: { totalPower: 3, controlledNodes: 1 },
     player: { totalPower: 3, controlledNodes: 1 },
@@ -189,6 +190,147 @@ function App() {
     selectedNode.current = null;
   };
 
+  const updateTravelingPower = () => {
+    const arrivedPower = [];
+    for (let i = 0; i < travelingPower.current.length; i++) {
+      const tPower = travelingPower.current[i];
+      tPower.t += POWER_SPEED;
+      if (tPower.t >= 1.0) {
+        arrivedPower.push(i);
+      }
+    }
+
+    for (const i of arrivedPower.sort((a, b) => b - a)) {
+      const tPower = travelingPower.current[i];
+      const endNode = nodesRef.current[tPower.endNode];
+      if (endNode.faction === tPower.faction) {
+        endNode.power += tPower.power;
+      } else {
+        endNode.power -= tPower.power;
+        if (endNode.power <= 0) {
+          endNode.power = Math.abs(endNode.power);
+          endNode.faction = tPower.faction;
+        }
+      }
+      travelingPower.current.splice(i, 1);
+    }
+  };
+
+  const doAI = () => {
+    for (let i = 0; i < nodesRef.current.length; i++) {
+      if (
+        nodesRef.current[i].faction === "none" ||
+        nodesRef.current[i].faction === "player"
+      ) {
+        continue;
+      }
+
+      const queue: { cur: number; prev: number; cost: number }[] = [];
+      const parents = new Map<number, { parent: number; cost: number }>();
+      const goals: { goal: number; cost: number }[] = [];
+      const visited = new Set<number>();
+
+      for (const con of nodesRef.current[i].connections) {
+        queue.push({ cur: con, prev: i, cost: 1 });
+        parents.set(i, { parent: -1, cost: 0 });
+      }
+
+      while (queue.length > 0) {
+        const element = queue.pop();
+        if (element === undefined) {
+          break;
+        }
+
+        const { cur, prev, cost } = element;
+        if (visited.has(cur)) {
+          const parent = parents.get(cur);
+          if (parent === undefined) {
+            parents.set(cur, { parent: prev, cost: cost });
+          } else if (parent.cost > cost) {
+            parents.set(cur, { parent: prev, cost: cost });
+          } else {
+            continue;
+          }
+
+          for (const con of nodesRef.current[cur].connections) {
+            queue.push({ cur: con, prev: cur, cost: cost + 1 });
+          }
+
+          continue;
+        }
+
+        visited.add(cur);
+
+        if (nodesRef.current[cur].faction === "red") {
+          for (const con of nodesRef.current[cur].connections) {
+            queue.push({ cur: con, prev: cur, cost: cost + 1 });
+          }
+        } else {
+          goals.push({ goal: cur, cost });
+        }
+      }
+
+      goals.sort((a, b) => a.cost - b.cost);
+      if (goals.length === 0) {
+        continue;
+      }
+
+      const g = goals[0];
+      if (g === undefined) {
+        continue;
+      }
+      const { goal } = g;
+
+      const neighbors = new Set<number>();
+      for (const neighbor of nodesRef.current[i].connections) {
+        neighbors.add(neighbor);
+      }
+
+      if (neighbors.has(goal)) {
+        if (
+          (nodesRef.current[goal].faction === "red" &&
+            nodesRef.current[i].power > 0) ||
+          nodesRef.current[i].power > nodesRef.current[goal].power
+        ) {
+          travelingPower.current.push({
+            startNode: i,
+            endNode: goal,
+            power: nodesRef.current[i].power,
+            faction: nodesRef.current[i].faction,
+            t: 0.0,
+          });
+          nodesRef.current[i].power = 0;
+        }
+      } else {
+        let currentNode = goal;
+        while (true) {
+          if (neighbors.has(currentNode)) {
+            if (
+              (nodesRef.current[currentNode].faction === "red" &&
+                nodesRef.current[i].power > 0) ||
+              nodesRef.current[i].power > nodesRef.current[currentNode].power
+            ) {
+              travelingPower.current.push({
+                startNode: i,
+                endNode: currentNode,
+                power: nodesRef.current[i].power,
+                faction: nodesRef.current[i].faction,
+                t: 0.0,
+              });
+              nodesRef.current[i].power = 0;
+            }
+            break;
+          }
+          const parent = parents.get(currentNode);
+          if (parent === undefined) {
+            break;
+          }
+          currentNode = parent.parent;
+        }
+      }
+    }
+  };
+
   const update = (frameCount: number) => {
     if (frameCount % 60 === 0) {
       const newStats: Statistics = {
@@ -215,34 +357,11 @@ function App() {
       }
     }
 
-    const arrivedPower = [];
-    for (let i = 0; i < travelingPower.current.length; i++) {
-      const tPower = travelingPower.current[i];
-      tPower.t += POWER_SPEED;
-      if (tPower.t >= 1.0) {
-        arrivedPower.push(i);
-      }
-    }
-
-    for (const i of arrivedPower) {
-      const tPower = travelingPower.current[i];
-      const endNode = nodesRef.current[tPower.endNode];
-      if (endNode.faction === tPower.faction) {
-        endNode.power += tPower.power;
-      } else {
-        endNode.power -= tPower.power;
-        if (endNode.power <= 0) {
-          endNode.power = Math.abs(endNode.power);
-          endNode.faction = tPower.faction;
-        }
-      }
-      travelingPower.current.splice(i, 1);
-    }
+    doAI();
+    updateTravelingPower();
   };
 
-  const draw = (ctx: CanvasRenderingContext2D, frameCount: number) => {
-    update(frameCount);
-
+  const render = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     for (const { n1, n2 } of connectionsRef.current) {
@@ -289,7 +408,17 @@ function App() {
 
       ctx.fillStyle = "#000000";
       ctx.fillText(power.toFixed(0), x, y);
+      ctx.fillText(i.toFixed(0), x + 15, y);
     }
+  };
+
+  const draw = (ctx: CanvasRenderingContext2D, frameCount: number) => {
+    if (isPaused) {
+      return;
+    }
+
+    update(frameCount);
+    render(ctx);
   };
 
   return (
@@ -312,6 +441,9 @@ function App() {
         }}
         draw={draw}
       />
+      <button onClick={() => setIsPaused(!isPaused)}>
+        {isPaused ? "Resume" : "Pause"}
+      </button>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
         <div>Faction</div>
         <div>Total Power</div>
